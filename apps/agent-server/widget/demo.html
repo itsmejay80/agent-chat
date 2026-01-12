@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"> -->
+</head>
+
+<body>
+    <main style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 48px; max-width: 720px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 48px;">
+            <h1 style="margin: 0 0 16px; font-size: 32px; color: #111827; font-weight: 700;">Interactive AI Assistant</h1>
+            <p style="margin: 0; color: #6b7280; font-size: 18px; line-height: 1.6;">
+                Experience the power of intelligent conversation. Click the chat button in the bottom-right corner to start interacting with your AI assistant.
+            </p>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 32px; color: white; margin-bottom: 32px; box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);">
+            <h2 style="margin: 0 0 12px; font-size: 20px; font-weight: 600;">Welcome to the Demo</h2>
+            <p style="margin: 0; line-height: 1.6; opacity: 0.95;">
+                This page showcases an embeddable chat widget powered by AI. The widget is fully customizable and can be seamlessly integrated into any website. Try it out by asking questions or starting a conversation!
+            </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; margin-bottom: 32px;">
+            <div style="padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background: white;">
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #eff6ff; border-radius: 10px; margin-bottom: 16px; color: #3b82f6;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #111827;">Real-time Responses</h3>
+                <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Get instant answers powered by advanced AI models.</p>
+            </div>
+
+            <div style="padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background: white;">
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #fef3c7; border-radius: 10px; margin-bottom: 16px; color: #d97706;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #111827;">Context-Aware</h3>
+                <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Remembers conversation context for better interactions.</p>
+            </div>
+
+            <div style="padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background: white;">
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #d1fae5; border-radius: 10px; margin-bottom: 16px; color: #059669;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                </div>
+                <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #111827;">Easy Embed</h3>
+                <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Simple one-line integration for any website.</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; color: #9ca3af; font-size: 14px;">
+            <p style="margin: 0;">💡 Click the chat bubble in the bottom-right corner to start a conversation</p>
+        </div>
+    </main>
+
+    <!-- Add this before the closing </body> tag -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatbotId = urlParams.get('chatbotId') || '3683c1a9-c7dd-4218-816f-b2611ad712b4';
+        const serverUrl = urlParams.get('server') || 'http://localhost:3001';
+
+        const script = document.createElement('script');
+        script.src = `${serverUrl}/widget/chat-widget.js`;
+        script.setAttribute('data-server', serverUrl);
+        script.setAttribute('data-chatbot-id', chatbotId);
+        document.body.appendChild(script);
+    </script>
+</body>
+
+</html>

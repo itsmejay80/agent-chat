@@ -1,0 +1,87 @@
+import { LlmAgent } from "@google/adk";
+import type { Chatbot } from "@agent-chat/shared";
+import { loadKnowledgeForChatbot, formatKnowledgeForPrompt } from "./config/loader";
+import type { KnowledgeEntry } from "./config/cache";
+
+// Map of model aliases to actual model names
+const MODEL_MAP: Record<string, string> = {
+  "gemini-2.0-flash": "gemini-2.0-flash-exp",
+  "gemini-1.5-flash": "gemini-1.5-flash",
+  "gemini-1.5-pro": "gemini-1.5-pro",
+};
+
+// Cache for created agents
+const agentCache = new Map<string, { agent: LlmAgent; configHash: string }>();
+
+/**
+ * Generate a hash of the chatbot config for cache invalidation
+ * Includes knowledge content to ensure agent updates when knowledge changes
+ */
+function getConfigHash(chatbot: Chatbot, knowledge: KnowledgeEntry[]): string {
+  return JSON.stringify({
+    id: chatbot.id,
+    system_prompt: chatbot.system_prompt,
+    model: chatbot.model,
+    temperature: chatbot.temperature,
+    max_tokens: chatbot.max_tokens,
+    updated_at: chatbot.updated_at,
+    // Include knowledge in hash to detect changes
+    knowledge: knowledge.map((k) => ({ id: k.id, name: k.name, content: k.textContent })),
+  });
+}
+
+/**
+ * Create a dynamic agent based on chatbot configuration
+ * Now async to support loading knowledge from database
+ */
+export async function createAgentFromConfig(chatbot: Chatbot): Promise<LlmAgent> {
+  // Load knowledge for this chatbot
+  const knowledge = await loadKnowledgeForChatbot(chatbot.id);
+  const configHash = getConfigHash(chatbot, knowledge);
+
+  // Check if we have a cached agent with the same config
+  const cached = agentCache.get(chatbot.id);
+  if (cached && cached.configHash === configHash) {
+    return cached.agent;
+  }
+
+  // Get the actual model name
+  const modelName = MODEL_MAP[chatbot.model] || chatbot.model;
+
+  // ADK requires agent names to be valid identifiers (letters/digits/underscore).
+  // Our chatbot IDs are UUIDs, so normalize to keep names stable and valid.
+  const safeChatbotId = chatbot.id.replace(/[^a-zA-Z0-9_]/g, "_");
+
+  // Build instruction with knowledge appended
+  const knowledgePrompt = formatKnowledgeForPrompt(knowledge);
+  const fullInstruction = chatbot.system_prompt + knowledgePrompt;
+
+  // Create the agent with the chatbot's configuration
+  const agent = new LlmAgent({
+    name: `chatbot_${safeChatbotId}`,
+    model: modelName,
+    description: chatbot.description || `AI Assistant - ${chatbot.name}`,
+    instruction: fullInstruction,
+    tools: [],
+  });
+
+  // Cache the agent
+  agentCache.set(chatbot.id, { agent, configHash });
+
+  return agent;
+}
+
+/**
+ * Invalidate cached agent for a chatbot
+ */
+export function invalidateAgent(chatbotId: string): void {
+  agentCache.delete(chatbotId);
+}
+
+/**
+ * Get agent for a chatbot, creating it if necessary
+ * Now async to support loading knowledge from database
+ */
+export async function getAgentForChatbot(chatbot: Chatbot): Promise<LlmAgent> {
+  return createAgentFromConfig(chatbot);
+}
