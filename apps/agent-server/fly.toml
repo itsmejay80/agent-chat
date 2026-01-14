@@ -1,0 +1,79 @@
+# =============================================================================
+# Fly.io Configuration for agent-server
+# Deploy with: fly deploy --config apps/agent-server/fly.toml
+# =============================================================================
+
+# TODO: Change this to your unique app name
+app = "agent-chat-server"
+
+# Primary region - choose closest to your users
+# Options: sjc (San Jose), iad (Virginia), lhr (London), etc.
+# Full list: https://fly.io/docs/reference/regions/
+primary_region = "sjc"
+
+# =============================================================================
+# Build Configuration
+# =============================================================================
+[build]
+  # Dockerfile path relative to where fly.toml is located
+  dockerfile = "Dockerfile"
+
+# =============================================================================
+# Environment Variables (non-sensitive)
+# =============================================================================
+# NOTE: Set sensitive env vars with: fly secrets set KEY=value
+# Required secrets:
+#   - GOOGLE_GENAI_API_KEY
+#   - DATABASE_URL
+#   - SUPABASE_URL
+#   - SUPABASE_ANON_KEY
+#   - SUPABASE_SERVICE_ROLE_KEY
+
+[env]
+  PORT = "3001"
+  NODE_ENV = "production"
+
+# =============================================================================
+# HTTP Service Configuration
+# =============================================================================
+[http_service]
+  internal_port = 3001
+  force_https = true
+  
+  # Auto-scaling settings (free tier friendly)
+  auto_stop_machines = true      # Stop when no traffic (saves resources)
+  auto_start_machines = true     # Start when traffic arrives
+  min_machines_running = 0       # Allow scaling to 0 for free tier
+  
+  processes = ["app"]
+
+  # Health check for the service
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+# =============================================================================
+# Health Check Configuration
+# =============================================================================
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  path = "/api/health"
+  timeout = "5s"
+
+# =============================================================================
+# VM Configuration (Free Tier)
+# =============================================================================
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256    # Free tier limit
+
+# =============================================================================
+# Optional: Metrics (uncomment if needed)
+# =============================================================================
+# [metrics]
+#   port = 9091
+#   path = "/metrics"

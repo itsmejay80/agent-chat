@@ -1,0 +1,95 @@
+# =============================================================================
+# CI Workflow - Runs on all PRs and pushes
+# Tests, lints, and builds the entire monorepo
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===========================================================================
+  # Build and Test
+  # ===========================================================================
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check - Shared package
+        run: bun run --filter=@agent-chat/shared tsc --noEmit
+        continue-on-error: true
+
+      - name: Type check - DB package
+        run: bun run --filter=@agent-chat/db tsc --noEmit
+        continue-on-error: true
+
+      - name: Lint Dashboard
+        run: bun run --filter=dashboard lint
+        continue-on-error: true
+
+      - name: Build Dashboard
+        run: bun run --filter=dashboard build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key' }}
+
+      - name: Type check - Agent Server
+        working-directory: apps/agent-server
+        run: bun run tsc --noEmit
+        continue-on-error: true
+
+  # ===========================================================================
+  # Docker Build Test (Agent Server)
+  # ===========================================================================
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/agent-server/Dockerfile
+          push: false
+          tags: agent-server:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

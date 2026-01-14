@@ -10,6 +10,33 @@ const MODEL_MAP: Record<string, string> = {
   "gemini-1.5-pro": "gemini-1.5-pro",
 };
 
+/**
+ * Base instructions that apply to ALL agents regardless of custom system prompts.
+ * These ensure consistent, safe, and helpful behavior across all chatbots.
+ */
+const BASE_INSTRUCTIONS = `## Core Behavioral Guidelines (Always Active)
+
+### Accuracy & Honesty
+- ONLY respond with information from your provided knowledge base and system instructions
+- NEVER fabricate, guess, or make up information including: facts, statistics, URLs, contact details, prices, dates, or any specific data
+- If you don't have information about something, honestly say: "I don't have that information available" and offer to help with something else
+- When uncertain about any details, acknowledge the uncertainty rather than providing potentially incorrect information
+
+### Friendly & Helpful Demeanor
+- Be warm, welcoming, and genuinely helpful in every interaction
+- Use a conversational and approachable tone while remaining professional
+- Show patience and understanding, especially with confused or frustrated users
+- Make users feel valued and supported throughout the conversation
+
+### Staying On Topic
+- Focus on topics within your configured scope and knowledge base
+- Politely redirect off-topic conversations back to areas where you can genuinely help
+- If asked about topics outside your knowledge, kindly explain your limitations
+
+---
+
+`;
+
 // Cache for created agents
 const agentCache = new Map<string, { agent: LlmAgent; configHash: string }>();
 
@@ -52,9 +79,9 @@ export async function createAgentFromConfig(chatbot: Chatbot): Promise<LlmAgent>
   // Our chatbot IDs are UUIDs, so normalize to keep names stable and valid.
   const safeChatbotId = chatbot.id.replace(/[^a-zA-Z0-9_]/g, "_");
 
-  // Build instruction with knowledge appended
+  // Build instruction with base instructions + custom prompt + knowledge
   const knowledgePrompt = formatKnowledgeForPrompt(knowledge);
-  const fullInstruction = chatbot.system_prompt + knowledgePrompt;
+  const fullInstruction = BASE_INSTRUCTIONS + chatbot.system_prompt + knowledgePrompt;
 
   // Create the agent with the chatbot's configuration
   const agent = new LlmAgent({

@@ -1,5 +1,6 @@
-import Fastify from "fastify";
+import Fastify, { type FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
@@ -21,6 +22,16 @@ const fastify = Fastify({
 // Register plugins
 await fastify.register(cors, {
   origin: true, // Allow all origins for widget embedding
+});
+
+await fastify.register(rateLimit, {
+  max: 100,
+  timeWindow: "1 minute",
+  keyGenerator: (request: FastifyRequest) => request.ip,
+  errorResponseBuilder: () => ({
+    success: false,
+    error: "Too many requests",
+  }),
 });
 
 await fastify.register(fastifyStatic, {
@@ -394,6 +405,24 @@ fastify.post<{ Params: { chatbotId: string } }>(
   async (request, reply) => {
     try {
       const { chatbotId } = request.params;
+      const internalToken = process.env.INTERNAL_API_TOKEN;
+      const providedToken = request.headers["x-internal-token"];
+
+      if (!internalToken) {
+        reply.status(500);
+        return {
+          success: false,
+          error: "Internal token not configured",
+        };
+      }
+
+      if (typeof providedToken !== "string" || providedToken !== internalToken) {
+        reply.status(401);
+        return {
+          success: false,
+          error: "Unauthorized",
+        };
+      }
 
       // Invalidate cached agent, runner, config, and knowledge
       invalidateAgent(chatbotId);
