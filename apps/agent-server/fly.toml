@@ -37,7 +37,7 @@ primary_region = "sjc"
 # Release Command (runs migrations before deployment goes live)
 # =============================================================================
 [deploy]
-  release_command = "cd /app && bunx drizzle-kit push"
+  release_command = "sh /app/apps/agent-server/scripts/db-push.sh"
 
 # =============================================================================
 # HTTP Service Configuration
