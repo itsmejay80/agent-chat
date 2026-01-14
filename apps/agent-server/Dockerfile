@@ -50,9 +50,9 @@ COPY --from=build /app ./
 # Set working directory to agent-server
 WORKDIR /app/apps/agent-server
 
-# Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 bunjs && \
+# Create non-root user for security (using groupadd/useradd for Debian-based images)
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs bunjs && \
     chown -R bunjs:nodejs /app
 
 USER bunjs
