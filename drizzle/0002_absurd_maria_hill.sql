@@ -1,1 +1,2 @@
-DROP TABLE "analytics_events" CASCADE;
+-- Migration already applied to existing database
+-- This file is intentionally empty
