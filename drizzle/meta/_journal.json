@@ -15,6 +15,13 @@
       "when": 1768097993109,
       "tag": "0001_wakeful_landau",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768431053504,
+      "tag": "0002_absurd_maria_hill",
+      "breakpoints": true
     }
   ]
 }
