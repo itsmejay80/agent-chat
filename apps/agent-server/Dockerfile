@@ -4,7 +4,7 @@
 # =============================================================================
 
 # Base image with Bun
-FROM oven/bun:1 AS base
+FROM oven/bun:1.2.19 AS base
 WORKDIR /app
 
 # =============================================================================
@@ -19,6 +19,7 @@ COPY package.json bun.lock ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/db/package.json ./packages/db/
 COPY apps/agent-server/package.json ./apps/agent-server/
+COPY apps/dashboard/package.json ./apps/dashboard/
 
 # Install all dependencies (production only)
 RUN bun install --frozen-lockfile --production
@@ -28,11 +29,8 @@ RUN bun install --frozen-lockfile --production
 # =============================================================================
 FROM base AS build
 
-# Copy installed dependencies
+# Copy installed dependencies (bun hoists all deps to root node_modules)
 COPY --from=install /app/node_modules ./node_modules
-COPY --from=install /app/packages/shared/node_modules ./packages/shared/node_modules 2>/dev/null || true
-COPY --from=install /app/packages/db/node_modules ./packages/db/node_modules 2>/dev/null || true
-COPY --from=install /app/apps/agent-server/node_modules ./apps/agent-server/node_modules 2>/dev/null || true
 
 # Copy all source files needed
 COPY package.json bun.lock ./

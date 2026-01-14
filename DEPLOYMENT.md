@@ -69,6 +69,8 @@ fly secrets set \
 > **Important:** Use the Supabase **Connection Pooling** URL for `DATABASE_URL`, not the direct connection.
 > Find it in: Supabase Dashboard → Settings → Database → Connection Pooling
 
+> **Note:** The `PORT` environment variable is already set in `fly.toml` (defaults to 3001). Fly.io automatically routes external traffic (ports 80/443) to this internal port, so you don't need to include the port in URLs when accessing your backend.
+
 > **Security:** The `INTERNAL_API_TOKEN` is required for the `/api/internal/reload/:chatbotId` endpoint. Generate a secure random token (the command above does this automatically). Store this token securely - you'll need it when calling the reload endpoint from your dashboard.
 
 ### Step 5: Deploy
@@ -121,6 +123,10 @@ Add these in the Vercel dashboard:
 |----------|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anon key |
+| `AGENT_SERVER_URL` | Your Fly.io app URL (e.g., `https://your-app-name.fly.dev`) - **no port needed** |
+| `INTERNAL_API_TOKEN` | Same token you set in Fly.io secrets (for cache invalidation) |
+
+> **Note:** `AGENT_SERVER_URL` should be the full Fly.io URL without a port number. Fly.io automatically handles ports 80/443 and routes to the internal port (3001) configured in `fly.toml`.
 
 ### Step 4: Deploy
 
