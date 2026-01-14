@@ -34,6 +34,12 @@ primary_region = "sjc"
   NODE_ENV = "production"
 
 # =============================================================================
+# Release Command (runs migrations before deployment goes live)
+# =============================================================================
+[deploy]
+  release_command = "bun run migrate"
+
+# =============================================================================
 # HTTP Service Configuration
 # =============================================================================
 [http_service]

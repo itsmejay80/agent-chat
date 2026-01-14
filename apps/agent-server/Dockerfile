@@ -4,7 +4,7 @@
 # =============================================================================
 
 # Base image with Bun
-FROM oven/bun:1.2.19 AS base
+FROM oven/bun:1.3.6 AS base
 WORKDIR /app
 
 # =============================================================================
@@ -37,6 +37,7 @@ COPY package.json bun.lock ./
 COPY packages/shared ./packages/shared
 COPY packages/db ./packages/db
 COPY apps/agent-server ./apps/agent-server
+COPY drizzle ./drizzle
 
 # =============================================================================
 # Stage 3: Production release
