@@ -21,8 +21,8 @@ COPY packages/db/package.json ./packages/db/
 COPY apps/agent-server/package.json ./apps/agent-server/
 COPY apps/dashboard/package.json ./apps/dashboard/
 
-# Install all dependencies (production only)
-RUN bun install --frozen-lockfile --production
+# Install all dependencies (including devDependencies for drizzle-kit)
+RUN bun install --frozen-lockfile
 
 # =============================================================================
 # Stage 2: Build/prepare the application
@@ -33,7 +33,7 @@ FROM base AS build
 COPY --from=install /app/node_modules ./node_modules
 
 # Copy all source files needed
-COPY package.json bun.lock ./
+COPY package.json bun.lock drizzle.config.ts ./
 COPY packages/shared ./packages/shared
 COPY packages/db ./packages/db
 COPY apps/agent-server ./apps/agent-server
